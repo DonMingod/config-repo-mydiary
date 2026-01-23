@@ -2,7 +2,6 @@ spring:
   application:
     name: diary-service
 
-  # Configuración de base de datos MySQL
   datasource:
     url: jdbc:mysql://localhost:3306/mydiary_db?useSSL=false&serverTimezone=UTC&createDatabaseIfNotExist=true
     username: root
@@ -11,18 +10,16 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: validate  
+      ddl-auto: validate
     show-sql: true
     properties:
       hibernate:
-            dialect: org.hibernate.dialect.MySQLDialect
+        dialect: org.hibernate.dialect.MySQLDialect  
         format_sql: true
 
-# Configuración del servidor
 server:
   port: 8082
 
-# Configuración de Eureka Client
 eureka:
   client:
     service-url:
@@ -33,7 +30,6 @@ eureka:
     prefer-ip-address: true
     instance-id: ${spring.application.name}:${server.port}
 
-# Actuator endpoints
 management:
   endpoints:
     web:
@@ -43,14 +39,13 @@ management:
     health:
       show-details: always
 
-# Logging
+# Logging (MEJORADO PARA PRODUCCIÓN)
 logging:
   level:
-    com.huisa: DEBUG
-    org.hibernate.SQL: DEBUG
-    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    root: INFO
+    com.huisa: INFO
+    org.hibernate.SQL: WARN
 
-# SpringDoc OpenAPI
 springdoc:
   api-docs:
     path: /api-docs
