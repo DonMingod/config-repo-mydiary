@@ -11,16 +11,12 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: validate  
     show-sql: true
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQL8Dialect
         format_sql: true
-
-  # Configuración de Config Server
-  config:
-    import: optional:configserver:http://localhost:8888
 
 # Configuración del servidor
 server:
@@ -29,7 +25,7 @@ server:
 # Configuración JWT
 jwt:
   secret: MiSecretoSuperSeguroParaFirmarTokensJWTMyDiary2026ConMas256Bits
-  expiration: 86400000  # 24 horas en milisegundos
+  expiration: 86400000
 
 # Configuración de Eureka Client
 eureka:
