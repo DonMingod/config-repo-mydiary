@@ -2,15 +2,11 @@ spring:
   application:
     name: currency-service
 
+# Puerto del servidor
 server:
   port: 8085
 
-# ⬇️ API Externa (sin API key, gratuita)
-exchangerate:
-  api:
-    base-url: https://open.er-api.com/v6/latest
-
-# Eureka
+# Configuración de Eureka Client
 eureka:
   client:
     service-url:
@@ -21,39 +17,61 @@ eureka:
     prefer-ip-address: true
     instance-id: ${spring.application.name}:${server.port}
 
-# Resilience4j (Circuit Breaker)
+# Configuración de API Externa (ExchangeRate-API)
+currency:
+  api:
+    base-url: https://api.exchangerate-api.com/v4/latest
+    timeout: 5000
+    default-base-currency: USD
+
+# Configuración de Resilience4j (Circuit Breaker)
 resilience4j:
   circuitbreaker:
     instances:
       currencyApi:
-        sliding-window-size: 10
-        failure-rate-threshold: 50
-        wait-duration-in-open-state: 30s
-        permitted-number-of-calls-in-half-open-state: 3
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 10s
+        failureRateThreshold: 50
   
   retry:
     instances:
       currencyApi:
-        max-attempts: 3
-        wait-duration: 1s
+        maxAttempts: 3
+        waitDuration: 1s
 
-# Actuator
+  timelimiter:
+    instances:
+      currencyApi:
+        timeoutDuration: 5s
+
+# OpenFeign Configuration
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 5000
+        readTimeout: 5000
+        loggerLevel: basic
+  circuitbreaker:
+    enabled: true
+
+# Actuator endpoints
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics
+        include: health,info,metrics,circuitbreakers
   endpoint:
     health:
       show-details: always
-
-# Logging
-logging:
-  level:
-    com.huisa: DEBUG
-    feign: DEBUG
-
-# Swagger
+  health:
+    circuitbreakers:
+      enabled: true
+# SpringDoc OpenAPI
 springdoc:
   api-docs:
     path: /api-docs
