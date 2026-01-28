@@ -2,11 +2,15 @@ spring:
   application:
     name: currency-service
 
-# Puerto del servidor
 server:
   port: 8085
 
-# Configuración de Eureka Client
+# ⬇️ API Externa (sin API key, gratuita)
+exchangerate:
+  api:
+    base-url: https://open.er-api.com/v6/latest
+
+# Eureka
 eureka:
   client:
     service-url:
@@ -17,69 +21,39 @@ eureka:
     prefer-ip-address: true
     instance-id: ${spring.application.name}:${server.port}
 
-# Configuración de API Externa (ExchangeRate-API)
-currency:
-  api:
-    base-url: https://api.exchangerate-api.com/v4/latest
-    timeout: 5000
-    default-base-currency: USD
-
-# Configuración de Resilience4j (Circuit Breaker)
+# Resilience4j (Circuit Breaker)
 resilience4j:
   circuitbreaker:
     instances:
       currencyApi:
-        registerHealthIndicator: true
-        slidingWindowSize: 10
-        minimumNumberOfCalls: 5
-        permittedNumberOfCallsInHalfOpenState: 3
-        automaticTransitionFromOpenToHalfOpenEnabled: true
-        waitDurationInOpenState: 10s
-        failureRateThreshold: 50
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 30s
+        permitted-number-of-calls-in-half-open-state: 3
   
   retry:
     instances:
       currencyApi:
-        maxAttempts: 3
-        waitDuration: 1s
+        max-attempts: 3
+        wait-duration: 1s
 
-  timelimiter:
-    instances:
-      currencyApi:
-        timeoutDuration: 5s
-
-# OpenFeign Configuration
-feign:
-  client:
-    config:
-      default:
-        connectTimeout: 5000
-        readTimeout: 5000
-        loggerLevel: basic
-  circuitbreaker:
-    enabled: true
-
-# Actuator endpoints
+# Actuator
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics,circuitbreakers
+        include: health,info,metrics
   endpoint:
     health:
       show-details: always
-  health:
-    circuitbreakers:
-      enabled: true
 
 # Logging
 logging:
   level:
-    root: INFO
-    com.huisa: INFO
+    com.huisa: DEBUG
     feign: DEBUG
 
-# SpringDoc OpenAPI
+# Swagger
 springdoc:
   api-docs:
     path: /api-docs
