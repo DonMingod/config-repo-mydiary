@@ -2,20 +2,6 @@ spring:
   application:
     name: currency-service
 
-  # Configuración de Redis (para caché)
-  data:
-    redis:
-      host: localhost
-      port: 6379
-      timeout: 60000
-
-  # Configuración de Cache
-  cache:
-    type: redis
-    redis:
-      time-to-live: 3600000  # 1 hora
-      cache-null-values: false
-
 # Puerto del servidor
 server:
   port: 8085
@@ -50,15 +36,12 @@ resilience4j:
         automaticTransitionFromOpenToHalfOpenEnabled: true
         waitDurationInOpenState: 10s
         failureRateThreshold: 50
-        eventConsumerBufferSize: 10
   
   retry:
     instances:
       currencyApi:
         maxAttempts: 3
         waitDuration: 1s
-        enableExponentialBackoff: true
-        exponentialBackoffMultiplier: 2
 
   timelimiter:
     instances:
@@ -81,7 +64,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics,circuitbreakers,circuitbreakerevents
+        include: health,info,metrics,circuitbreakers
   endpoint:
     health:
       show-details: always
