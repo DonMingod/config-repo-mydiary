@@ -1,1 +1,105 @@
+spring:
+  application:
+    name: currency-service
 
+  # Configuración de Redis (para caché)
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      timeout: 60000
+
+  # Configuración de Cache
+  cache:
+    type: redis
+    redis:
+      time-to-live: 3600000  # 1 hora
+      cache-null-values: false
+
+# Puerto del servidor
+server:
+  port: 8085
+
+# Configuración de Eureka Client
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${server.port}
+
+# Configuración de API Externa (ExchangeRate-API)
+currency:
+  api:
+    base-url: https://api.exchangerate-api.com/v4/latest
+    timeout: 5000
+    default-base-currency: USD
+
+# Configuración de Resilience4j (Circuit Breaker)
+resilience4j:
+  circuitbreaker:
+    instances:
+      currencyApi:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 10s
+        failureRateThreshold: 50
+        eventConsumerBufferSize: 10
+  
+  retry:
+    instances:
+      currencyApi:
+        maxAttempts: 3
+        waitDuration: 1s
+        enableExponentialBackoff: true
+        exponentialBackoffMultiplier: 2
+
+  timelimiter:
+    instances:
+      currencyApi:
+        timeoutDuration: 5s
+
+# OpenFeign Configuration
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 5000
+        readTimeout: 5000
+        loggerLevel: basic
+  circuitbreaker:
+    enabled: true
+
+# Actuator endpoints
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,circuitbreakers,circuitbreakerevents
+  endpoint:
+    health:
+      show-details: always
+  health:
+    circuitbreakers:
+      enabled: true
+
+# Logging
+logging:
+  level:
+    root: INFO
+    com.huisa: INFO
+    feign: DEBUG
+
+# SpringDoc OpenAPI
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
